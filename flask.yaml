@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pyredis
+  name: pyredis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pyredis
+  template:
+    metadata:
+      labels:
+        app: pyredis
+    spec:
+      containers:
+      - image: anaikdocker/pyredis:2
+        name: pyredis
+        ports:
+        - containerPort: 5000
+        env:
+        - name: REDIS_URL
+          value: "redis.default.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pyredis
+  name: pyredis
+  namespace: default
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: pyredis
+  sessionAffinity: None
+  type: NodePort
